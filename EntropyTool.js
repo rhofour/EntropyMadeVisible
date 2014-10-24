@@ -1,6 +1,7 @@
+var EntropyMadeVisible; // Declare this to be global
 (function(){
 "use strict";
-var EntropyMadeVisible = (function(my) {
+EntropyMadeVisible = (function(my) {
   var increaseN = function increaseN() {
     var n = Math.sqrt($("#JointProbGrid").cells.length);
     console.log(n);
@@ -12,6 +13,6 @@ var EntropyMadeVisible = (function(my) {
   };
 
   return my;
-}({}));
+}(EntropyMadeVisible));
 console.log("Loaded EntropyTool.js");
 }());
