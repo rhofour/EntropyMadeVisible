@@ -1,13 +1,16 @@
 <html>
 	<head>
 		<title>Entropy Made Easy</title>
-		<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
-		<script src="EntropyTool.js"></script>
+		<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+		<script type="test/javascript" src="EntropyTool.js"></script>
 	</head>
 	<body>
 		<div id="test"></div>
 		<script>
-			makeTool('test')
+			"use strict";
+			jQuery(document).ready(function(){
+				EntropyMadeEasy.makeTool("test");
+			});
 		</script>
 	</body>
 </html>
