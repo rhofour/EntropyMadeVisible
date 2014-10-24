@@ -1,5 +1,5 @@
 "use strict";
-var EntropyMadeEasy = (function(my) {
+var EntropyMadeVisible = (function(my) {
   my.makeTool = function makeTool(id) {
     $("#" + id).load("Tool.html");
     increaseN();
@@ -13,3 +13,4 @@ var EntropyMadeEasy = (function(my) {
   return my;
 }({}));
 console.log("TESTING");
+x = 8;
