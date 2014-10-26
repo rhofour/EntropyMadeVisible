@@ -74,7 +74,7 @@ EntropyMadeVisible = (function(my) {
 
   my.makeTool = function (id) {
     $("#" + id).load("Tool.html", function() {
-      //my.increaseN();
+      my.increaseN(); // Start out 2x2
       $('#JointProbGrid').on('click', '.uncoloredCell', switchCellOn);
       $('#JointProbGrid').on('click', '.coloredCell', switchCellOff);
       console.log("Tool created.");

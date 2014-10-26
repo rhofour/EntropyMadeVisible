@@ -1,0 +1,71 @@
+.uncoloredCell {
+	border: 1px solid black;
+	border-collapse: collapse;
+	color: white;
+	background: white;
+}
+
+.coloredCell {
+	border: 1px solid black;
+	border-collapse: collapse;
+	color: #00CCFF;
+	background: #00CCFF;
+}
+
+.jointProbHeader {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+
+#JointProbGrid {
+	border: 0px solid black;
+	border-collapse: collapse;
+	width: 100%;
+	height: 100%;
+}
+
+#HX_input, #HY_input, #HXY_input {
+	border: 2px solid grey;
+	padding: 2px;
+	margin: 2px;
+	width: 6em;
+}
+
+#VennDiagram {
+	width: 100%;
+}
+
+#GraphicsDiv {
+	display: table;
+	width: 100%;
+}
+
+#JointProbDiv, #RightGraphicsDiv {
+	display: table-cell;
+	float: left;
+	width: 40%;
+	padding-left: 5%;
+	padding-right: 5%;
+}
+
+#VennDiagramDiv {
+	width: 100%;
+}
+
+#XHistDiv, #YHistDiv {
+	width: 40%;
+	padding-left: 5%;
+	padding-right: 5%;
+}
+
+#XHistDiv {
+	float: left;
+}
+
+#YHistDiv {
+	float: right;
+}
+
+#EntropyDiv {
+	clear: both;
+}
