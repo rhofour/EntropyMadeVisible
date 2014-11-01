@@ -6,6 +6,8 @@ EntropyMadeVisible = (function(my) {
   my.colorGrid = [[]]; // Stores the color in each cell (with 0 being none)
   my.colorGrid[1] = []
   my.colorGrid[1][1] = 0;
+  my.xProbs = [];
+  my.yProbs = [];
   var n = 1;
 
   var increaseTableN = function() {
@@ -119,6 +121,8 @@ EntropyMadeVisible = (function(my) {
       for (var i = 1; i <= n; i++) {
         probs[i] = 0;
       }
+      my.xProbs = probs;
+      my.yProbs = probs;
       changeHist("#XHist", probs);
       changeHist("#YHist", probs);
       return;
@@ -134,7 +138,8 @@ EntropyMadeVisible = (function(my) {
       }
       probs[i] = probs[i] / my.coloredCells;
     }
-    changeHist("#XHist", probs);
+    my.xProbs = probs.slice(0); // Do this to copy the array by value
+    changeHist("#XHist", my.xProbs);
     // Calculate Y probabilities
     for (var i = 1; i <= n; i++) {
       probs[i] = 0;
@@ -145,7 +150,24 @@ EntropyMadeVisible = (function(my) {
       }
       probs[i] = probs[i] / my.coloredCells;
     }
-    changeHist("#YHist", probs);
+    my.yProbs = probs.slice(0); // Do this to copy the array by value
+    changeHist("#YHist", my.yProbs);
+  }
+
+  var entropy = function(probs) {
+    var ent = 0;
+    for (var i = 1; i <= n; i++) {
+      var x = Math.log2(probs[i]) * probs[i];
+      if(!isNaN(x)) {
+        ent = ent + x;
+      }
+    }
+    return -ent;
+  }
+
+  var resetStats = function() {
+    $("#HX_input").val(entropy(my.xProbs) + " bits");
+    $("#HY_input").val(entropy(my.yProbs) + " bits");
   }
 
   my.increaseN = function() {
@@ -154,6 +176,7 @@ EntropyMadeVisible = (function(my) {
     increaseHistN("#XHist");
     increaseHistN("#YHist");
     recalcProbs();
+    resetStats();
   };
 
   my.decreaseN = function() {
@@ -163,6 +186,7 @@ EntropyMadeVisible = (function(my) {
     decreaseHistN("#XHist");
     decreaseHistN("#YHist");
     recalcProbs();
+    resetStats();
   };
 
   var switchCellOn = function( event ) {
@@ -172,6 +196,7 @@ EntropyMadeVisible = (function(my) {
     my.colorGrid[$(this).parent().index()][$(this).index()] = 1;
     my.coloredCells++;
     recalcProbs();
+    resetStats();
   }
 
   var switchCellOff = function ( event ) {
@@ -181,6 +206,7 @@ EntropyMadeVisible = (function(my) {
     my.colorGrid[$(this).parent().index()][$(this).index()] = 0;
     my.coloredCells--;
     recalcProbs();
+    resetStats();
   }
 
   my.makeTool = function (id) {
