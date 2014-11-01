@@ -165,9 +165,24 @@ EntropyMadeVisible = (function(my) {
     return -ent;
   }
 
+  var jointEntropy = function() {
+    var ent = 0;
+    for (var i = 1; i <= n; i++) {
+      for (var j = 1; j <= n; j++) {
+        var prob = my.colorGrid[i][j] / my.coloredCells;
+        var x = Math.log2(prob) * prob; 
+        if(!isNaN(x)) {
+          ent = ent + x;
+        }
+      }
+    }
+    return -ent;
+  }
+
   var resetStats = function() {
     $("#HX_input").val(entropy(my.xProbs) + " bits");
     $("#HY_input").val(entropy(my.yProbs) + " bits");
+    $("#HXY_input").val(jointEntropy() + " bits");
   }
 
   my.increaseN = function() {
