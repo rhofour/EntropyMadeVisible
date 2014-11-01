@@ -214,6 +214,9 @@ EntropyMadeVisible = (function(my) {
       my.increaseN(); // Start out 2x2
       $('#JointProbGrid').on('click', '.uncoloredCell', switchCellOn);
       $('#JointProbGrid').on('click', '.coloredCell', switchCellOff);
+      $('#HX_input').attr("disabled", "disabled");
+      $('#HY_input').attr("disabled", "disabled");
+      $('#HXY_input').attr("disabled", "disabled");
       console.log("Tool created.");
     });
   };
