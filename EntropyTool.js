@@ -8,6 +8,7 @@ EntropyMadeVisible = (function(my) {
   my.colorGrid[1][1] = 0;
   my.xProbs = [];
   my.yProbs = [];
+  my.colors = 1;
   var n = 1;
 
   var increaseTableN = function() {
@@ -232,6 +233,10 @@ EntropyMadeVisible = (function(my) {
       $('#HX_input').attr("disabled", "disabled");
       $('#HY_input').attr("disabled", "disabled");
       $('#HXY_input').attr("disabled", "disabled");
+      $('#N').attr("disabled", "disabled");
+      $("#N").val(n);
+      $('#Ncolors').attr("disabled", "disabled");
+      $("#Ncolors").val(my.colors);
       console.log("Tool created.");
     });
   };

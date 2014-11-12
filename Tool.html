@@ -9,8 +9,25 @@
 				<th class="jointProbHeader">1</th><td class="uncoloredCell">o</td>
 			</tr>
 		</table>
-		<input type="button" value="-" onclick="EntropyMadeVisible.decreaseN();" />
-		<input type="button" value="+" onclick="EntropyMadeVisible.increaseN();" />
+		<div id="TableParamsDiv"><ul id="TableParams">
+			<li class="TableParam">
+				<input type="button" value="-" onclick="EntropyMadeVisible.decreaseN();" />
+				<input type="button" value="+" onclick="EntropyMadeVisible.increaseN();" />
+				N: <input id="N" size=2 />
+			</li>
+			<li class="TableParam">
+				<input type="button" value="-" onclick="EntropyMadeVisible.increaseColors();" />
+				<input type="button" value="+" onclick="EntropyMadeVisible.decreaseColors();" />
+				Colors: <input id="Ncolors" size=2 />
+			</li>
+	</ul></div>
+		<div id="EntropyDiv">
+			<ul>
+				<li>H(X): <input id="HX_input" /></li>
+				<li>H(Y): <input id="HY_input" /></li>
+				<li>H(X,Y): <input id="HXY_input" /></li>
+			</ul>
+		</div>
 	</div>
 	<div id="RightGraphicsDiv">
 		<div id="VennDiagramDiv">
@@ -38,11 +55,4 @@
 			</svg>
 		</div>
 	</div>
-</div>
-<div id="EntropyDiv">
-	<ul>
-		<li>H(X): <input id="HX_input" /></li>
-		<li>H(Y): <input id="HY_input" /></li>
-		<li>H(X,Y): <input id="HXY_input" /></li>
-	</ul>
 </div>

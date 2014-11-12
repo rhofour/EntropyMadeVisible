@@ -5,11 +5,18 @@
 	background: white;
 }
 
-.coloredCell {
+.coloredCell1 {
 	border: 1px solid black;
 	border-collapse: collapse;
 	color: #00CCFF;
 	background: #00CCFF;
+}
+
+.coloredCell2 {
+	border: 1px solid black;
+	border-collapse: collapse;
+	color: #0000FF;
+	background: #0000FF;
 }
 
 .jointProbHeader {
@@ -29,6 +36,31 @@
 	padding: 2px;
 	margin: 2px;
 	width: 6em;
+}
+
+#TableParamsDiv {
+	display: table;
+	width: 100%;
+	border-collapse: collapse;
+	border: none;
+}
+
+#TableParams {
+	display: table-row;
+}
+
+.TableParam {
+	display: table-cell;
+	width: 45%;
+	margin: 0;
+}
+
+.vLine {
+	border-left: thin solid black;
+}
+
+.hFill {
+	width: auto;
 }
 
 #VennDiagram {
