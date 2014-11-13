@@ -9,6 +9,7 @@ EntropyMadeVisible = (function(my) {
   my.xProbs = [];
   my.yProbs = [];
   my.colors = 1;
+  var maxColors = 2;
   var n = 1;
 
   var increaseTableN = function() {
@@ -101,6 +102,7 @@ EntropyMadeVisible = (function(my) {
   }
 
   var decreaseHistN = function (id) {
+    var hist = $(id).get(0);
     var bar = hist.getElementById("bar" + (n+1));
     hist.removeChild(bar);
     resizeColumns(id);
@@ -130,14 +132,18 @@ EntropyMadeVisible = (function(my) {
     }
     // Calculate X probabilities first
     var probs = [];
+    var totalMass = 0;
+    for (var i = 1; i <= n; i++) {
+      for (var j = 1; j <= n; j++) {
+        totalMass = totalMass + my.colorGrid[i][j];
+      }
+    }
     for (var i = 1; i <= n; i++) {
       probs[i] = 0;
       for (var j = 1; j <= n; j++) {
-        if(my.colorGrid[i][j] > 0) {
-          probs[i]++;
-        }
+        probs[i] = probs[i] + my.colorGrid[i][j];
       }
-      probs[i] = probs[i] / my.coloredCells;
+      probs[i] = probs[i] / totalMass;
     }
     my.xProbs = probs.slice(0); // Do this to copy the array by value
     changeHist("#XHist", my.xProbs);
@@ -145,11 +151,9 @@ EntropyMadeVisible = (function(my) {
     for (var i = 1; i <= n; i++) {
       probs[i] = 0;
       for (var j = 1; j <= n; j++) {
-        if(my.colorGrid[j][i] > 0) {
-          probs[i]++;
-        }
+        probs[i] = probs[i] + my.colorGrid[j][i];
       }
-      probs[i] = probs[i] / my.coloredCells;
+      probs[i] = probs[i] / totalMass;
     }
     my.yProbs = probs.slice(0); // Do this to copy the array by value
     changeHist("#YHist", my.yProbs);
@@ -168,9 +172,15 @@ EntropyMadeVisible = (function(my) {
 
   var jointEntropy = function() {
     var ent = 0;
+    var totalMass = 0;
     for (var i = 1; i <= n; i++) {
       for (var j = 1; j <= n; j++) {
-        var prob = my.colorGrid[i][j] / my.coloredCells;
+        totalMass = totalMass + my.colorGrid[i][j];
+      }
+    }
+    for (var i = 1; i <= n; i++) {
+      for (var j = 1; j <= n; j++) {
+        var prob = my.colorGrid[i][j] / totalMass;
         var x = Math.log2(prob) * prob; 
         if(!isNaN(x)) {
           ent = ent + x;
@@ -205,22 +215,50 @@ EntropyMadeVisible = (function(my) {
     resetStats();
   };
 
-  var switchCellOn = function( event ) {
-    event.stopPropagation();
-    var cell = event.target;
-    cell.className = "coloredCell";
-    my.colorGrid[$(this).parent().index()][$(this).index()] = 1;
-    my.coloredCells++;
-    recalcProbs();
-    resetStats();
-  }
+  my.increaseColors = function() {
+    if(my.colors < maxColors) {
+      my.colors = my.colors + 1;
+      $("#Ncolors").val(my.colors);
+    }
+  };
 
-  var switchCellOff = function ( event ) {
+  my.decreaseColors = function() {
+    if(my.colors > 1) {
+      my.colors = my.colors - 1;
+      $("#Ncolors").val(my.colors);
+      // Remove any colors out of this range
+      for (var i = 1; i <= n; i++) {
+        for (var j = 1; j <= n; j++) {
+          if(my.colorGrid[i][j] > my.colors) {
+            my.colorGrid[i][j] = my.colors;
+            $("#JointProbGrid")[0].rows[i].cells[j].className = "coloredCell" + my.colors;
+          }
+        }
+      }
+      recalcProbs();
+      resetStats();
+    }
+  };
+
+  var cycleCell = function( event ) {
     event.stopPropagation();
     var cell = event.target;
-    cell.className = "uncoloredCell";
-    my.colorGrid[$(this).parent().index()][$(this).index()] = 0;
-    my.coloredCells--;
+    if(cell.className == "uncoloredCell") {
+      cell.className = "coloredCell1";
+      my.colorGrid[$(this).parent().index()][$(this).index()] = 1;
+      my.coloredCells++;
+    } else {
+      var n = my.colorGrid[$(this).parent().index()][$(this).index()];
+      if(n < my.colors) {
+        cell.className = "coloredCell" + (n+1);
+        my.colorGrid[$(this).parent().index()][$(this).index()] = n + 1;
+        my.coloredCells++;
+      } else {
+        cell.className = "uncoloredCell";
+        my.colorGrid[$(this).parent().index()][$(this).index()] = 0;
+        my.coloredCells--;
+      }
+    }
     recalcProbs();
     resetStats();
   }
@@ -228,8 +266,10 @@ EntropyMadeVisible = (function(my) {
   my.makeTool = function (id) {
     $("#" + id).load("Tool.html", function() {
       my.increaseN(); // Start out 2x2
-      $('#JointProbGrid').on('click', '.uncoloredCell', switchCellOn);
-      $('#JointProbGrid').on('click', '.coloredCell', switchCellOff);
+      $('#JointProbGrid').on('click', '.uncoloredCell', cycleCell);
+      for(var i = 1; i <= maxColors; i++) {
+        $('#JointProbGrid').on('click', ('.coloredCell' + i), cycleCell);
+      }
       $('#HX_input').attr("disabled", "disabled");
       $('#HY_input').attr("disabled", "disabled");
       $('#HXY_input').attr("disabled", "disabled");
