@@ -162,7 +162,7 @@ EntropyMadeVisible = (function(my) {
   var entropy = function(probs) {
     var ent = 0;
     for (var i = 1; i <= n; i++) {
-      var x = Math.log2(probs[i]) * probs[i];
+      var x = (Math.log(probs[i]) / Math.LN2) * probs[i];
       if(!isNaN(x)) {
         ent = ent + x;
       }
@@ -263,9 +263,25 @@ EntropyMadeVisible = (function(my) {
     resetStats();
   }
 
-  my.makeTool = function (id) {
+  my.makeTool = function (id, params) {
+    if(params === undefined) {
+      params = [];
+    }
+    var targetN = 2;
+    // Parse input options
+    for(var i = 0; i < params.length; i++) {
+      var param = params[i];
+      if(param[0] == "N") {
+        targetN = parseInt(param.slice(1));
+        if(!(targetN > 1)) {
+          targetN = 1;
+        }
+      }
+    }
     $("#" + id).load("Tool.html", function() {
-      my.increaseN(); // Start out 2x2
+      for(var i = 1; i < targetN; i++) {
+        my.increaseN();
+      }
       $('#JointProbGrid').on('click', '.uncoloredCell', cycleCell);
       for(var i = 1; i <= maxColors; i++) {
         $('#JointProbGrid').on('click', ('.coloredCell' + i), cycleCell);
