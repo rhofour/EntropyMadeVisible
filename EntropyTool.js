@@ -86,6 +86,7 @@ EntropyMadeVisible = (function(my) {
     var hist = $(id).get(0);
     var totalWidth = 98/n;
     var spacing = 0.05 * totalWidth;
+    var histClass = hist.getElementById("bar1").className.baseVal;
     for(var i = 1; i < n; i++) {
       var bar = hist.getElementById("bar" + i);
       bar.setAttributeNS(null, "width", totalWidth - 2*spacing);
@@ -96,7 +97,7 @@ EntropyMadeVisible = (function(my) {
     bar.setAttributeNS(null, "id", "bar" + n);
     bar.setAttributeNS(null, "y", 98);
     bar.setAttributeNS(null, "height", 0);
-    bar.setAttributeNS(null, "style", "fill:rgb(255,0,0);stroke-width:0");
+    bar.setAttributeNS(null, "class", histClass);
     hist.appendChild(bar);
     resizeColumns(id);
   }

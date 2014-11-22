@@ -101,3 +101,13 @@
 #EntropyDiv {
 	clear: both;
 }
+
+rect.redBar {
+	fill: rgb(238,153,153);
+	stroke-width: 0;
+}
+
+rect.greenBar {
+	fill: rgb(153,238,153);
+	stroke-width: 0;
+}
