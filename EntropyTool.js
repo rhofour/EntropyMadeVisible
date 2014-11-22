@@ -143,7 +143,9 @@ EntropyMadeVisible = (function(my) {
       for (var j = 1; j <= n; j++) {
         probs[i] = probs[i] + my.colorGrid[i][j];
       }
-      probs[i] = probs[i] / totalMass;
+      if(totalMass > 0) {
+        probs[i] = probs[i] / totalMass;
+      }
     }
     my.xProbs = probs.slice(0); // Do this to copy the array by value
     changeHist("#XHist", my.xProbs);
@@ -153,7 +155,9 @@ EntropyMadeVisible = (function(my) {
       for (var j = 1; j <= n; j++) {
         probs[i] = probs[i] + my.colorGrid[j][i];
       }
-      probs[i] = probs[i] / totalMass;
+      if(totalMass > 0) {
+        probs[i] = probs[i] / totalMass;
+      }
     }
     my.yProbs = probs.slice(0); // Do this to copy the array by value
     changeHist("#YHist", my.yProbs);
@@ -263,25 +267,19 @@ EntropyMadeVisible = (function(my) {
     resetStats();
   }
 
+  // This function takes the id of a div and an optional list of parameters and
+  // fills the div with our tool
+  // params: an array of string options to control the tool created
+  // Possible options include:
+  // Nx: Sets the default grid size to be x by x (ex: N5 makes a 5x5 grid)
+  // Cx: Sets the starting number of colors to be x (ex: C5 starts with 5 colors)
+  // fixedSize: disables the buttons to change the size of the grid
+  // fixedColors: disables the buttons to change the number of colors
   my.makeTool = function (id, params) {
     if(params === undefined) {
       params = [];
     }
-    var targetN = 2;
-    // Parse input options
-    for(var i = 0; i < params.length; i++) {
-      var param = params[i];
-      if(param[0] == "N") {
-        targetN = parseInt(param.slice(1));
-        if(!(targetN > 1)) {
-          targetN = 1;
-        }
-      }
-    }
     $("#" + id).load("Tool.html", function() {
-      for(var i = 1; i < targetN; i++) {
-        my.increaseN();
-      }
       $('#JointProbGrid').on('click', '.uncoloredCell', cycleCell);
       for(var i = 1; i <= maxColors; i++) {
         $('#JointProbGrid').on('click', ('.coloredCell' + i), cycleCell);
@@ -293,6 +291,33 @@ EntropyMadeVisible = (function(my) {
       $("#N").val(n);
       $('#Ncolors').attr("disabled", "disabled");
       $("#Ncolors").val(my.colors);
+      // Parse input options
+      for(var i = 0; i < params.length; i++) {
+        var param = params[i];
+        if(param[0] == "N") { // Grid size
+          var targetN = parseInt(param.slice(1));
+          if(!(targetN > 1)) {
+            targetN = 1;
+          }
+          for(var j = 1; j < targetN; j++) {
+            my.increaseN();
+          }
+        } else if(param[0] == "C") { // # of colors
+          var targetColors = parseInt(param.slice(1));
+          if(!(targetColors > 1)) {
+            targetColors = 1;
+          }
+          for(var j = 1; j < targetColors; j++) {
+            my.increaseColors();
+          }
+        } else if(param == "fixedSize") { // Disable changing grid size
+          $("#nPlus").attr("disabled", "disabled");
+          $("#nMinus").attr("disabled", "disabled");
+        } else if(param == "fixedColors") { // Disable changing grid size
+          $("#cPlus").attr("disabled", "disabled");
+          $("#cMinus").attr("disabled", "disabled");
+        }
+      }
       console.log("Tool created.");
     });
   };
