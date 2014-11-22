@@ -19,7 +19,7 @@ EntropyMadeVisible = (function(my) {
     // Add new column header
     row = table.rows[0];
     var th = document.createElement('th');
-    th.innerHTML = "" + n;
+    th.innerHTML = "Y=" + n;
     th.className = "jointProbHeader";
     row.appendChild(th);
 
@@ -35,7 +35,7 @@ EntropyMadeVisible = (function(my) {
     row = table.insertRow(-1);
     // Add new row header
     var th = document.createElement('th');
-    th.innerHTML = "" + n;
+    th.innerHTML = "X=" + n;
     th.className = "jointProbHeader";
     row.appendChild(th);
     my.colorGrid[n] = [];
