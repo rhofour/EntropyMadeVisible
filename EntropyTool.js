@@ -12,6 +12,10 @@ EntropyMadeVisible = (function(my) {
   var maxColors = 2;
   var n = 1;
 
+  var log2(x) {
+    return Math.log(x) / Math.LN2;
+  }
+
   var increaseTableN = function() {
     var table = $("#JointProbGrid").get(0);
     var row;
@@ -167,7 +171,7 @@ EntropyMadeVisible = (function(my) {
   var entropy = function(probs) {
     var ent = 0;
     for (var i = 1; i <= n; i++) {
-      var x = (Math.log(probs[i]) / Math.LN2) * probs[i];
+      var x = log2(probs[i]) * probs[i];
       if(!isNaN(x)) {
         ent = ent + x;
       }
@@ -186,9 +190,29 @@ EntropyMadeVisible = (function(my) {
     for (var i = 1; i <= n; i++) {
       for (var j = 1; j <= n; j++) {
         var prob = my.colorGrid[i][j] / totalMass;
-        var x = Math.log2(prob) * prob; 
+        var x = log2(prob) * prob; 
         if(!isNaN(x)) {
           ent = ent + x;
+        }
+      }
+    }
+    return -ent;
+  }
+
+  var mutualInformation = function() {
+    var mi = 0;
+    var totalMass = 0;
+    for (var i = 1; i <= n; i++) {
+      for (var j = 1; j <= n; j++) {
+        totalMass = totalMass + my.colorGrid[i][j];
+      }
+    }
+    for (var i = 1; i <= n; i++) {
+      for (var j = 1; j <= n; j++) {
+        var prob = my.colorGrid[i][j] / totalMass;
+        var x = log2(prob / (my.xProbs[i] * my.yProbs[j])) * prob; 
+        if(!isNaN(x)) {
+          mi = mi + x;
         }
       }
     }
@@ -201,13 +225,33 @@ EntropyMadeVisible = (function(my) {
     $("#HXY_input").val(jointEntropy() + " bits");
   }
 
+  var updateVennDiagram = function() {
+    var hX = entropy(my.xProbs);
+    var hY = entropy(my.yProbs);
+    var xCirc = $("#redCircle").get(0);
+    var yCirc = $("#greenCircle").get(0);
+    // Larger circle is always 70, smaller circle is proportional
+    if(hX > hY) {
+      xCirc.setAttributeNS(null, "r", 70);
+      yCirc.setAttributeNS(null, "r", hY == 0 ? 0 : 70*(Math.sqrt(hY) / Math.sqrt(hX)));
+    } else {
+      yCirc.setAttributeNS(null, "r", 70);
+      xCirc.setAttributeNS(null, "r", hX == 0 ? 0 : 70*(Math.sqrt(hX) / Math.sqrt(hY)));
+    }
+  }
+
+  var resetGraphics = function() {
+    recalcProbs();
+    resetStats();
+    updateVennDiagram();
+  }
+
   my.increaseN = function() {
     n = n + 1;
     increaseTableN();
     increaseHistN("#XHist");
     increaseHistN("#YHist");
-    recalcProbs();
-    resetStats();
+    resetGraphics();
   };
 
   my.decreaseN = function() {
@@ -216,8 +260,7 @@ EntropyMadeVisible = (function(my) {
     decreaseTableN();
     decreaseHistN("#XHist");
     decreaseHistN("#YHist");
-    recalcProbs();
-    resetStats();
+    resetGraphics();
   };
 
   my.increaseColors = function() {
@@ -240,8 +283,7 @@ EntropyMadeVisible = (function(my) {
           }
         }
       }
-      recalcProbs();
-      resetStats();
+      resetGraphics();
     }
   };
 
@@ -264,8 +306,7 @@ EntropyMadeVisible = (function(my) {
         my.coloredCells--;
       }
     }
-    recalcProbs();
-    resetStats();
+    resetGraphics();
   }
 
   // This function takes the id of a div and an optional list of parameters and
