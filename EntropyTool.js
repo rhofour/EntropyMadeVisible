@@ -9,6 +9,10 @@ EntropyMadeVisible = (function(my) {
   my.xProbs = [];
   my.yProbs = [];
   my.colors = 1;
+  my.correctHx = NaN;
+  my.correctHy = NaN;
+  my.correctHxy = NaN;
+  my.correctMi = NaN;
   var maxColors = 2;
   var n = 1;
 
@@ -220,10 +224,18 @@ EntropyMadeVisible = (function(my) {
   }
 
   var resetStats = function() {
-    $("#HX_input").val(entropy(my.xProbs) + " bits");
-    $("#HY_input").val(entropy(my.yProbs) + " bits");
-    $("#HXY_input").val(jointEntropy() + " bits");
-    $("#MI_input").val(mutualInformation() + " bits");
+    if(isNaN(my.correctHx)) {
+      $("#HX_input").val(entropy(my.xProbs) + " bits");
+    }
+    if(isNaN(my.correctHy)) {
+      $("#HY_input").val(entropy(my.yProbs) + " bits");
+    }
+    if(isNaN(my.correctHxy)) {
+      $("#HXY_input").val(jointEntropy() + " bits");
+    }
+    if(isNaN(my.correctMi)) {
+      $("#MI_input").val(mutualInformation() + " bits");
+    }
   }
 
   /* Stolen from:
@@ -368,6 +380,10 @@ EntropyMadeVisible = (function(my) {
   // Cx: Sets the starting number of colors to be x (ex: C5 starts with 5 colors)
   // fixedSize: disables the buttons to change the size of the grid
   // fixedColors: disables the buttons to change the number of colors
+  // HXx: sets the correct answer for H(X) to be x (ex: HX2 makes the answer 2 bits)
+  // HYx: sets the correct answer for H(Y) to be x
+  // HXYx: sets the correct answer for H(X,Y) to be x
+  // MIx: sets the correct answer for MI(X;Y) to be x
   my.makeTool = function (id, params) {
     if(params === undefined) {
       params = [];
@@ -377,24 +393,18 @@ EntropyMadeVisible = (function(my) {
       for(var i = 1; i <= maxColors; i++) {
         $('#JointProbGrid').on('click', ('.coloredCell' + i), cycleCell);
       }
-      $('#HX_input').attr("disabled", "disabled");
-      $('#HY_input').attr("disabled", "disabled");
-      $('#HXY_input').attr("disabled", "disabled");
-      $('#MI_input').attr("disabled", "disabled");
       $('#N').attr("disabled", "disabled");
       $("#N").val(n);
       $('#Ncolors').attr("disabled", "disabled");
       $("#Ncolors").val(my.colors);
       // Parse input options
+      var targetN = 1;
       for(var i = 0; i < params.length; i++) {
         var param = params[i];
         if(param[0] == "N") { // Grid size
-          var targetN = parseInt(param.slice(1));
+          targetN = parseInt(param.slice(1));
           if(!(targetN > 1)) {
             targetN = 1;
-          }
-          for(var j = 1; j < targetN; j++) {
-            my.increaseN();
           }
         } else if(param[0] == "C") { // # of colors
           var targetColors = parseInt(param.slice(1));
@@ -410,8 +420,37 @@ EntropyMadeVisible = (function(my) {
         } else if(param == "fixedColors") { // Disable changing grid size
           $("#cPlus").attr("disabled", "disabled");
           $("#cMinus").attr("disabled", "disabled");
+        } else if(param.substring(0,2) == "HX") {
+          my.correctHx = parseInt(param.substring(2));
+        } else if(param.substring(0,2) == "HY") {
+          my.correctHy = parseInt(param.substring(2));
+        } else if(param.substring(0,3) == "HXY") {
+          my.correctHxy = parseInt(param.substring(3));
+        } else if(param.substring(0,2) == "MI") {
+          my.correctMi = parseInt(param.substring(2));
         }
       }
+      for(var j = 1; j < targetN; j++) {
+        my.increaseN();
+      }
+      if(isNaN(my.correctHx)) {
+        $('#HX_input').attr("disabled", "disabled");
+      }
+      if(isNaN(my.correctHy)) {
+        $('#HY_input').attr("disabled", "disabled");
+      }
+      if(isNaN(my.correctHxy)) {
+        $('#HXY_input').attr("disabled", "disabled");
+      }
+      if(isNaN(my.correctMi)) {
+        $('#MI_input').attr("disabled", "disabled");
+      }
+      if(!isNaN(my.correctHx) || !isNaN(my.correctHx) || !isNaN(my.correctHx) ||
+          !isNaN(my.correctHx)) {
+        // If we have any possible answers display the check answers button
+        $('#checkAnswersLi').css("display", "block");
+      }
+      resetGraphics();
       console.log("Tool created.");
     });
   };
