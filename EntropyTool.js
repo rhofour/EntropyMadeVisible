@@ -12,7 +12,7 @@ EntropyMadeVisible = (function(my) {
   var maxColors = 2;
   var n = 1;
 
-  var log2(x) {
+  var log2 = function(x) {
     return Math.log(x) / Math.LN2;
   }
 
@@ -216,13 +216,27 @@ EntropyMadeVisible = (function(my) {
         }
       }
     }
-    return -ent;
+    return mi;
   }
 
   var resetStats = function() {
     $("#HX_input").val(entropy(my.xProbs) + " bits");
     $("#HY_input").val(entropy(my.yProbs) + " bits");
     $("#HXY_input").val(jointEntropy() + " bits");
+    $("#MI_input").val(mutualInformation() + " bits");
+  }
+
+  /* Stolen from:
+   * http://math.stackexchange.com/questions/97850/get-the-size-of-an-area-defined-by-2-overlapping-circles */
+  function areaOfIntersection(x0, y0, r0, x1, y1, r1) {
+    var rr0 = r0*r0;
+    var rr1 = r1*r1;
+    var c = Math.sqrt((x1-x0)*(x1-x0) + (y1-y0)*(y1-y0));
+    var phi = (Math.acos((rr0+(c*c)-rr1) / (2*r0*c)))*2;
+    var theta = (Math.acos((rr1+(c*c)-rr0) / (2*r1*c)))*2;
+    var area1 = 0.5*theta*rr1 - 0.5*rr1*Math.sin(theta);
+    var area2 = 0.5*phi*rr0 - 0.5*rr0*Math.sin(phi);
+    return area1 + area2;
   }
 
   var updateVennDiagram = function() {
@@ -232,11 +246,48 @@ EntropyMadeVisible = (function(my) {
     var yCirc = $("#greenCircle").get(0);
     // Larger circle is always 70, smaller circle is proportional
     if(hX > hY) {
-      xCirc.setAttributeNS(null, "r", 70);
-      yCirc.setAttributeNS(null, "r", hY == 0 ? 0 : 70*(Math.sqrt(hY) / Math.sqrt(hX)));
+      var r1 = 70;
+      var r2 = hY == 0 ? 0 : 70*(Math.sqrt(hY) / Math.sqrt(hX));
     } else {
-      yCirc.setAttributeNS(null, "r", 70);
-      xCirc.setAttributeNS(null, "r", hX == 0 ? 0 : 70*(Math.sqrt(hX) / Math.sqrt(hY)));
+      var r2 = hY == 0 ? 0 : 70;
+      var r1 = hX == 0 ? 0 : 70*(Math.sqrt(hX) / Math.sqrt(hY));
+    }
+    xCirc.setAttributeNS(null, "r", r1);
+    yCirc.setAttributeNS(null, "r", r2);
+    // Numerically find area
+    var targetArea = (mutualInformation() / Math.max(hX, hY)) * Math.PI * 70 * 70;
+    var lowerD = Math.abs(r1 - r2);
+    var upperD = r1 + r2;
+    var lowerArea = Math.min(Math.PI * r1*r1, Math.PI * r2*r2);
+    var upperArea = 0;
+    var d = 0;
+    while(r1 > 0 && r2 > 0) {
+      if(Math.abs(targetArea - lowerArea) < 1) {
+        d = lowerD;
+        break;
+      } else if(Math.abs(targetArea - upperArea) < 1) {
+        d = upperD;
+        break;
+      }
+      var newD = (upperD + lowerD) / 2;
+      var newArea = areaOfIntersection(0, 0, r1, newD, 0, r2);
+      if(newArea > targetArea) {
+        lowerArea = newArea;
+        lowerD = newD;
+      } else {
+        upperArea = newArea;
+        upperD = newD;
+      }
+    }
+    var spacing = (1/28) * (r1 + d + r2);
+    xCirc.setAttributeNS(null, "cx", spacing + r1);
+    yCirc.setAttributeNS(null, "cx", spacing + r1 + d);
+    if(r1 > 0 && r2 > 0) {
+      $("#VennDiagram").get(0).setAttributeNS(null, "viewBox", "0 0 " + (2*spacing + r1 + d + r2) + " 150");
+      $("#vdBorder").get(0).setAttributeNS(null, "width", (2*spacing + r1 + d + r2));
+    } else {
+      $("#VennDiagram").get(0).setAttributeNS(null, "viewBox", "0 0 300 150");
+      $("#vdBorder").get(0).setAttributeNS(null, "width", 300);
     }
   }
 
@@ -329,6 +380,7 @@ EntropyMadeVisible = (function(my) {
       $('#HX_input').attr("disabled", "disabled");
       $('#HY_input').attr("disabled", "disabled");
       $('#HXY_input').attr("disabled", "disabled");
+      $('#MI_input').attr("disabled", "disabled");
       $('#N').attr("disabled", "disabled");
       $("#N").val(n);
       $('#Ncolors').attr("disabled", "disabled");

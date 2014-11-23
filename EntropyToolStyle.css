@@ -31,7 +31,7 @@
 	height: 100%;
 }
 
-#HX_input, #HY_input, #HXY_input {
+.statDisplay {
 	border: 2px solid grey;
 	padding: 2px;
 	margin: 2px;
