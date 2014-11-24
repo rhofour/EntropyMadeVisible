@@ -1,0 +1,25 @@
+<html>
+	<head>
+		<title>Entropy Made Visible</title>
+		 <link rel="stylesheet" type="text/css" href="EntropyToolStyle.css">
+		<script src="http://code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
+		<script src="EntropyTool.js" type="text/javascript"></script>
+		<script type="text/javascript"
+  			src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+	</head>
+	<body>
+		<H1>Problem 4</H1>
+		Given the following conditions on the distributions of spikes of X and Y, determine what the diagram should look like
+		$$P(X = 4, Y = 2) = P(X=4,Y=3) = \frac{1}{4}$$
+		$$P(Y = 4) = \frac{1}{2}$$
+		$$P(X = 3) = \frac{1}{4}$$
+		<div id="test"></div>
+		<script>
+			"use strict";
+			jQuery(document).ready(function(){
+				EntropyMadeVisible.makeTool("test");
+			});
+		</script>
+	</body>
+</html>
