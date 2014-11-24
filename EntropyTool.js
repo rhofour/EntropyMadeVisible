@@ -13,6 +13,7 @@ EntropyMadeVisible = (function(my) {
   my.correctHy = NaN;
   my.correctHxy = NaN;
   my.correctMi = NaN;
+  my.probQs = [];
   var maxColors = 2;
   var n = 1;
 
@@ -221,12 +222,7 @@ EntropyMadeVisible = (function(my) {
 
   var mutualInformation = function() {
     var mi = 0;
-    var totalMass = 0;
-    for (var i = 1; i <= n; i++) {
-      for (var j = 1; j <= n; j++) {
-        totalMass = totalMass + my.colorGrid[i][j];
-      }
-    }
+    var totalMass = getTotalMass();
     for (var i = 1; i <= n; i++) {
       for (var j = 1; j <= n; j++) {
         var prob = my.colorGrid[i][j] / totalMass;
@@ -400,11 +396,21 @@ EntropyMadeVisible = (function(my) {
 
   var checkAnswers = function() {
     var correct = true;
-    if(!isNaN(my.correctHx)) {
-      correct = correct && my.correctHx == entropy(my.xProbs);
+    for(var i = 0; i < my.probQs.length; i++) {
+      var q = my.probQs[i];
+      var ans = parseFloat($("#Q_" + q[0] + "_" + q[1]).val());
+      if(isNaN(q[1])) { // P(X = q[0])
+        correct = correct && (Math.abs(my.xProbs[q[0]] - ans) < 0.01);
+      } else if(isNaN(q[0])) { // P(Y = q[1])
+        correct = correct && (Math.abs(my.yProbs[q[1]] - ans) < 0.01);
+      } else { // P(X = q[0], Y = q[1])
+        correct = correct && (Math.abs(my.colorGrid[q[0]][q[1]] / totalMass - ans) < 0.01);
+      }
     }
-    if(!isNaN(my.correctHy)) {
-      correct = correct && my.correctHy == entropy(my.yProbs);
+    if(correct) {
+      alert("Correct!");
+    } else {
+      alert("Not quite, try again.");
     }
   }
 
@@ -416,10 +422,11 @@ EntropyMadeVisible = (function(my) {
   // Cx: Sets the starting number of colors to be x (ex: C5 starts with 5 colors)
   // fixedSize: disables the buttons to change the size of the grid
   // fixedColors: disables the buttons to change the number of colors
-  // HXx: sets the correct answer for H(X) to be x (ex: HX2 makes the answer 2 bits)
-  // HYx: sets the correct answer for H(Y) to be x
-  // HXYx: sets the correct answer for H(X,Y) to be x
-  // MIx: sets the correct answer for MI(X;Y) to be x
+  // findP(X=x): Adds a P(X=x) field to fill in with an answer
+  // findP(Y=y): Adds a P(X=x) field to fill in with an answer
+  // findP(X=x,Y=y): Adds a P(X=x,Y=y) field to fill in with an answer
+  // row<x>:<values> Sets the value of a row
+  //  In a 4x4 grid row2:0121 would set row 2 to use those colors
   my.makeTool = function (id, params) {
     if(params === undefined) {
       params = [];
@@ -435,6 +442,7 @@ EntropyMadeVisible = (function(my) {
       $("#Ncolors").val(my.colors);
       // Parse input options
       var targetN = 1;
+      var storedRows = [];
       for(var i = 0; i < params.length; i++) {
         var param = params[i];
         if(param[0] == "N") { // Grid size
@@ -456,33 +464,61 @@ EntropyMadeVisible = (function(my) {
         } else if(param == "fixedColors") { // Disable changing grid size
           $("#cPlus").attr("disabled", "disabled");
           $("#cMinus").attr("disabled", "disabled");
-        } else if(param.substring(0,2) == "HX") {
-          my.correctHx = parseInt(param.substring(2));
-        } else if(param.substring(0,2) == "HY") {
-          my.correctHy = parseInt(param.substring(2));
-        } else if(param.substring(0,3) == "HXY") {
-          my.correctHxy = parseInt(param.substring(3));
-        } else if(param.substring(0,2) == "MI") {
-          my.correctMi = parseInt(param.substring(2));
+        } else if(param.substring(0,6) == "findP(") {
+          var inner = param.slice(6,-1);
+          var parts = inner.split(',');
+          var x = NaN;
+          var y = NaN;
+          for(var j = 0; j < parts.length; j++) {
+            var innerParts = parts[j].split('=');
+            if(innerParts[0].trim() == 'X') {
+              x = parseInt(innerParts[1].trim());
+            } else if(innerParts[0].trim() == 'Y') {
+              y = parseInt(innerParts[1].trim());
+            }
+          }
+          if(!isNaN(x) || !isNaN(y)) {
+            my.probQs.push([x,y]);
+            var li = document.createElement('li');
+            var text = "P(";
+            if(!isNaN(x)) {
+              text = text + "X=" + x;
+              if(!isNaN(y)) {
+                text = text + ", ";
+              }
+            }
+            if(!isNaN(y)) {
+              text = text + "Y=" + y;
+            }
+            text = text + "): <input id=\"Q_" + x + "_" + y + "\" class=\"answerInput\" />";
+            li.innerHTML = text;
+            var statDisplay = $("#statList").get(0);
+            statDisplay.appendChild(li);
+          }
+        } else if(param.substring(0,3) == "row") {
+          var parts = param.slice(3).split(':');
+          var row = parseInt(parts[0]);
+          storedRows[row] = parts[1];
         }
       }
       for(var j = 1; j < targetN; j++) {
         my.increaseN();
       }
-      if(isNaN(my.correctHx)) {
-        $('#HX_input').attr("disabled", "disabled");
+      var jointProbGrid = $("#JointProbGrid").get(0);
+      for(var j = 1; j < storedRows.length; j++) {
+        for(var k = 0; k < storedRows[j].length; k++) {
+          var x = parseInt(storedRows[j][k]);
+          if(x > 0) {
+            my.colorGrid[k+1][row] = x;
+            jointProbGrid.rows[j].cells[k+1].className = "coloredCell" + x;
+          }
+        }
       }
-      if(isNaN(my.correctHy)) {
-        $('#HY_input').attr("disabled", "disabled");
-      }
-      if(isNaN(my.correctHxy)) {
-        $('#HXY_input').attr("disabled", "disabled");
-      }
-      if(isNaN(my.correctMi)) {
-        $('#MI_input').attr("disabled", "disabled");
-      }
-      if(!isNaN(my.correctHx) || !isNaN(my.correctHx) || !isNaN(my.correctHx) ||
-          !isNaN(my.correctHx)) {
+      $('#HX_input').attr("disabled", "disabled");
+      $('#HY_input').attr("disabled", "disabled");
+      $('#HXY_input').attr("disabled", "disabled");
+      $('#MI_input').attr("disabled", "disabled");
+      if(true) {
         // If we have any possible answers display the check answers button
         $('#checkAnswersLi').css("display", "block");
         $('#checkAnswersLi').click(checkAnswers);
