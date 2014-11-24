@@ -127,6 +127,27 @@ EntropyMadeVisible = (function(my) {
     }
   }
 
+  var getTotalMass = function () {
+    var totalMass = 0;
+    for (var i = 1; i <= n; i++) {
+      for (var j = 1; j <= n; j++) {
+        totalMass = totalMass + my.colorGrid[i][j];
+      }
+    }
+    return totalMass;
+  }
+
+  var recalcColorProbs = function () {
+    var totalMass = getTotalMass();
+    var prob = totalMass == 0 ? 0 : 1/totalMass;
+    var colorProbsTable = $("#ColorProbsTable").get(0);
+    for(var i = 0; i < my.colors; i++) {
+      var row = colorProbsTable.rows[i];
+      row.cells[1].innerHTML = prob;
+      prob = prob * 2;
+    }
+  }
+
   var recalcProbs = function () {
     if(my.coloredCells == 0) { // Make histograms empty in this case
       var probs = [];
@@ -141,12 +162,7 @@ EntropyMadeVisible = (function(my) {
     }
     // Calculate X probabilities first
     var probs = [];
-    var totalMass = 0;
-    for (var i = 1; i <= n; i++) {
-      for (var j = 1; j <= n; j++) {
-        totalMass = totalMass + my.colorGrid[i][j];
-      }
-    }
+    var totalMass = getTotalMass();
     for (var i = 1; i <= n; i++) {
       probs[i] = 0;
       for (var j = 1; j <= n; j++) {
@@ -262,7 +278,7 @@ EntropyMadeVisible = (function(my) {
       var r2 = hY == 0 ? 0 : 70*(Math.sqrt(hY) / Math.sqrt(hX));
     } else {
       var r2 = hY == 0 ? 0 : 70;
-      var r1 = hX == 0 ? 0 : 70*(Math.sqrt(hX) / Math.sqrt(hY));
+      var r1 = hY == 0 ? 0 : 70*(Math.sqrt(hX) / Math.sqrt(hY));
     }
     xCirc.setAttributeNS(null, "r", r1);
     yCirc.setAttributeNS(null, "r", r2);
@@ -292,12 +308,14 @@ EntropyMadeVisible = (function(my) {
       }
     }
     var spacing = (1/28) * (r1 + d + r2);
-    xCirc.setAttributeNS(null, "cx", spacing + r1);
-    yCirc.setAttributeNS(null, "cx", spacing + r1 + d);
     if(r1 > 0 && r2 > 0) {
+      xCirc.setAttributeNS(null, "cx", spacing + r1);
+      yCirc.setAttributeNS(null, "cx", spacing + r1 + d);
       $("#VennDiagram").get(0).setAttributeNS(null, "viewBox", "0 0 " + (2*spacing + r1 + d + r2) + " 150");
       $("#vdBorder").get(0).setAttributeNS(null, "width", (2*spacing + r1 + d + r2));
     } else {
+      xCirc.setAttributeNS(null, "cx", 100);
+      yCirc.setAttributeNS(null, "cx", 200);
       $("#VennDiagram").get(0).setAttributeNS(null, "viewBox", "0 0 300 150");
       $("#vdBorder").get(0).setAttributeNS(null, "width", 300);
     }
@@ -305,6 +323,7 @@ EntropyMadeVisible = (function(my) {
 
   var resetGraphics = function() {
     recalcProbs();
+    recalcColorProbs();
     resetStats();
     updateVennDiagram();
   }
@@ -330,6 +349,13 @@ EntropyMadeVisible = (function(my) {
     if(my.colors < maxColors) {
       my.colors = my.colors + 1;
       $("#Ncolors").val(my.colors);
+      var colorProbsTable = $("#ColorProbsTable").get(0);
+      var row = colorProbsTable.insertRow(-1);
+      var cell = row.insertCell(-1);
+      cell.innerHTML = "0";
+      cell.className = "coloredCell" + my.colors;
+      row.insertCell(-1);
+      recalcColorProbs();
     }
   };
 
@@ -370,6 +396,16 @@ EntropyMadeVisible = (function(my) {
       }
     }
     resetGraphics();
+  }
+
+  var checkAnswers = function() {
+    var correct = true;
+    if(!isNaN(my.correctHx)) {
+      correct = correct && my.correctHx == entropy(my.xProbs);
+    }
+    if(!isNaN(my.correctHy)) {
+      correct = correct && my.correctHy == entropy(my.yProbs);
+    }
   }
 
   // This function takes the id of a div and an optional list of parameters and
@@ -449,6 +485,7 @@ EntropyMadeVisible = (function(my) {
           !isNaN(my.correctHx)) {
         // If we have any possible answers display the check answers button
         $('#checkAnswersLi').css("display", "block");
+        $('#checkAnswersLi').click(checkAnswers);
       }
       resetGraphics();
       console.log("Tool created.");
