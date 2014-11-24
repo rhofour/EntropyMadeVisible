@@ -1,0 +1,31 @@
+<html>
+	<head>
+		<title>Entropy Made Visible</title>
+		 <link rel="stylesheet" type="text/css" href="EntropyToolStyle.css">
+		<script src="http://code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
+		<script src="EntropyTool.js" type="text/javascript"></script>
+		<script type="text/javascript"
+  			src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+	</head>
+	<body>
+		<H1>Probability Review</H1>
+		In probability the <b>event space</b> is said the be the set of all possible outcomes of an experiment we are concerned with. In the case of this tool we are observing two nuerons spike counts which vary from 0 to n based on some stimulus. <br>
+		The <b>probability</b> of some event occuring can be defined as the number of times this event event can be seen in your event space. 
+		$$P(E)= \frac{\text{number of times we observe E}}{\text{number of events in our event space}}$$
+		The <b>joint probability</b> of two events is then simply defined as the probability of these two events occuring simultaneously. In the case of our diagram it is simply the probability in cell \( (i,j)\) where the events are \( X = i\) and \( Y = j\) .
+		<H1>Problem 1</H1>
+		Given the following diagram representing the spike counts of two neurons(X and Y) determine the following probabilities
+		$$P(X = 1)$$
+		$$P(X = 2)$$
+		$$P(Y = 1)$$
+		$$P(Y = 2)$$
+		<div id="test"></div>
+		<script>
+			"use strict";
+			jQuery(document).ready(function(){
+				EntropyMadeVisible.makeTool("test");
+			});
+		</script>
+	</body>
+</html>
