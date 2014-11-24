@@ -422,6 +422,12 @@ EntropyMadeVisible = (function(my) {
   // Cx: Sets the starting number of colors to be x (ex: C5 starts with 5 colors)
   // fixedSize: disables the buttons to change the size of the grid
   // fixedColors: disables the buttons to change the number of colors
+  // TODO: Add in conditional probabilities
+  // TODO: add in fixedProbabilities
+  // TODO: add makeP(X=x,Y=y)=z
+  // TODO: add in findH(X), findH(Y), findH(Y|X=x)
+  // TODO: add makeH(X)=x, makeH(Y|X=x)=y, makeH(X,Y)=z, makeMI(X;Y)=z
+  // makeP(X=4,Y=2)=0.25
   // findP(X=x): Adds a P(X=x) field to fill in with an answer
   // findP(Y=y): Adds a P(X=x) field to fill in with an answer
   // findP(X=x,Y=y): Adds a P(X=x,Y=y) field to fill in with an answer
@@ -509,8 +515,9 @@ EntropyMadeVisible = (function(my) {
         for(var k = 0; k < storedRows[j].length; k++) {
           var x = parseInt(storedRows[j][k]);
           if(x > 0) {
-            my.colorGrid[k+1][row] = x;
+            my.colorGrid[j][k+1] = x;
             jointProbGrid.rows[j].cells[k+1].className = "coloredCell" + x;
+            my.coloredCells++;
           }
         }
       }
