@@ -11,16 +11,17 @@
 	<body>
 		<H1>Problem 10</H1>
 		Given the listed conditions of the entropies of neuron spike counts X and Y determine what the diagram should look like:
-		$$H(X) = 1$$ bit
-		$$H(Y) = 2$$ bits
-		$$H(Y|X = 1) = 1$$ bit
-		$$H(Y|X = 3) = 1$$ bit
+		$$H(X) = 1 \text{bit}$$ 
+		$$H(Y) = 2 \text{bits}$$ 
+		$$H(Y|X = 1) = 1 \text{bit}$$ 
+		$$H(Y|X = 3) = 1 \text{bit}$$ 
 		<div id="test"></div>
 		<script>
 			"use strict";
 			jQuery(document).ready(function(){
-				EntropyMadeVisible.makeTool("test");
+				EntropyMadeVisible.makeTool("test",['N4','fixedSize','fixedColors','makeH(X)=1','makeH(Y)=2','makeH(Y|X=1)=1','makeH(Y|X=3)=1']);
 			});
 		</script>
+		<a href="http://127.0.0.1:8000/problem9.html">Previous Problem</a><a href="http://127.0.0.1:8000/problem11.html">Next Problem</a>
 	</body>
 </html>
