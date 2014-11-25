@@ -611,14 +611,14 @@ EntropyMadeVisible = (function(my) {
             }
             var li = document.createElement('li');
             var text = "";
-            if(prob) {
+            if(quantity == "P") {
               text = text +"P(";
-            } else {
+            } else if(quantity == "H"){
               text = text +"H(";
             }
             if(!isNaN(x)) {
               text = text + "X";
-              if(prob) {
+              if(quantity == "P") {
                 text = text + "=" + x;
               }
               if(!isNaN(y)) {
@@ -627,7 +627,7 @@ EntropyMadeVisible = (function(my) {
             }
             if(!isNaN(y)) {
               text = text + "Y";
-              if(prob) {
+              if(quantity == "P") {
                 text = text + "=" + y;
               }
             }
