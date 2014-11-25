@@ -19,7 +19,7 @@
 		$$H(X,Y) = H(X) + H(Y)$$
 		Intuitively this makes sense as the entropy of flipping 2 coins should be double the entropy of flipping 1 coin.<br>
 		Finally we can introduce <b> conditional entropy</b> :
-		$$H(Y|X=x) = -sum_{y\in Y}p(x|y)log_2(p(y|x))$$
+		$$H(Y|X=x) = -\sum_{y\in Y}p(x|y)log_2(p(y|x))$$
 		or more generally
 		$$H(Y|X) = -\sum_{x\in X}\sum_{y\in Y}p(x,y)log_2(p(y|x))$$
 		This can be intuitively thought of as the entropy of a random variable \( Y\) given that we already know something about \( X\).<br>
@@ -35,6 +35,6 @@
 				EntropyMadeVisible.makeTool("test",['N4','fixedSize','fixedColors','fixedProbabilities','row1:1000','row2:1000','row3:1000','row4:1000','findH(X)']);
 			});
 		</script>
-		<a href="http://problem4.html">Previous Problem</a><a href="http://problem6.html">Next Problem</a>
+		<a href="problem4.html">Previous Problem</a><a href="problem6.html">Next Problem</a>
 	</body>
 </html>
