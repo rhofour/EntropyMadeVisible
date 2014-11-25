@@ -9,11 +9,9 @@ EntropyMadeVisible = (function(my) {
   my.xProbs = [];
   my.yProbs = [];
   my.colors = 1;
-  my.correctHx = NaN;
-  my.correctHy = NaN;
-  my.correctHxy = NaN;
-  my.correctMi = NaN;
   my.probQs = [];
+  my.makeQs = [];
+  var fixedProbabilities = false;
   var maxColors = 2;
   var n = 1;
 
@@ -248,6 +246,13 @@ EntropyMadeVisible = (function(my) {
     if(isNaN(my.correctMi)) {
       $("#MI_input").val(mutualInformation() + " bits");
     }
+    for(var i = 0; i < my.makeQs.length; i++) {
+      var q = my.makeQs[i];
+      var x = getProb(q[0], q[1], q[2], q[3]);
+      $("#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3]).val(x);
+      $("#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3]).get(0).className =
+        Math.abs(x - q[4]) < 0.01 ? "correctStatDisplay" : "incorrectStatDisplay";
+    }
   }
 
   /* Stolen from:
@@ -374,6 +379,7 @@ EntropyMadeVisible = (function(my) {
 
   var cycleCell = function( event ) {
     event.stopPropagation();
+    if(fixedProbabilities) return;
     var cell = event.target;
     if(cell.className == "uncoloredCell") {
       cell.className = "coloredCell1";
@@ -394,18 +400,37 @@ EntropyMadeVisible = (function(my) {
     resetGraphics();
   }
 
+  var getProb = function(x, y, givenX, givenY) {
+    var totalMass = getTotalMass();
+    if(isNaN(y)) { // No Y
+      if(isNaN(givenY)) { // P(X = x)
+        return my.xProbs[x];
+      } else { // P(X = x|Y = givenY)
+        return (my.colorGrid[x][givenY] / totalMass) / my.yProbs[givenY];
+      }
+    } else if(isNaN(x)) { // No X
+      if(isNaN(givenX)) { // P(Y = y)
+        return my.yProbs[y];
+      } else { // P(Y = y|X = givenX)
+        return (my.colorGrid[givenX][y] / totalMass) / my.xProbs[givenX];
+      }
+    } else { // P(X = q[0], Y = q[1])
+      return my.colorGrid[x][y] / totalMass;
+    }
+  }
+
   var checkAnswers = function() {
     var correct = true;
     for(var i = 0; i < my.probQs.length; i++) {
       var q = my.probQs[i];
-      var ans = parseFloat($("#Q_" + q[0] + "_" + q[1]).val());
-      if(isNaN(q[1])) { // P(X = q[0])
-        correct = correct && (Math.abs(my.xProbs[q[0]] - ans) < 0.01);
-      } else if(isNaN(q[0])) { // P(Y = q[1])
-        correct = correct && (Math.abs(my.yProbs[q[1]] - ans) < 0.01);
-      } else { // P(X = q[0], Y = q[1])
-        correct = correct && (Math.abs(my.colorGrid[q[0]][q[1]] / totalMass - ans) < 0.01);
-      }
+      var ans = parseFloat($("#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3]).val());
+      correct = correct && (Math.abs(getProb(q[0], q[1], q[2], q[3]) - ans) < 0.01);
+    }
+    for(var i = 0; i < my.makeQs.length; i++) {
+      var q = my.makeQs[i];
+      correct = correct &&
+        $("#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3]).get(0).className ==
+        "correctStatDisplay";
     }
     if(correct) {
       alert("Correct!");
@@ -422,9 +447,6 @@ EntropyMadeVisible = (function(my) {
   // Cx: Sets the starting number of colors to be x (ex: C5 starts with 5 colors)
   // fixedSize: disables the buttons to change the size of the grid
   // fixedColors: disables the buttons to change the number of colors
-  // TODO: Add in conditional probabilities
-  // TODO: add in fixedProbabilities
-  // TODO: add makeP(X=x,Y=y)=z
   // TODO: add in findH(X), findH(Y), findH(Y|X=x)
   // TODO: add makeH(X)=x, makeH(Y|X=x)=y, makeH(X,Y)=z, makeMI(X;Y)=z
   // makeP(X=4,Y=2)=0.25
@@ -470,21 +492,44 @@ EntropyMadeVisible = (function(my) {
         } else if(param == "fixedColors") { // Disable changing grid size
           $("#cPlus").attr("disabled", "disabled");
           $("#cMinus").attr("disabled", "disabled");
-        } else if(param.substring(0,6) == "findP(") {
-          var inner = param.slice(6,-1);
-          var parts = inner.split(',');
+        } else if(param == "fixedProbabilities") { // Disable changing probabilities
+          fixedProbabilities = true;
+        } else if(param.substring(0,6) == "findP(" || param.substring(0,6) == "makeP(") {
+          var find = (param.substring(0,6) == "findP(");
+          var outerParts = param.substring(6).split(')=');
+          var inner = outerParts[0];
+          var parts = inner.split('|');
+          var leftInner = parts[0].trim().split(',');
           var x = NaN;
           var y = NaN;
-          for(var j = 0; j < parts.length; j++) {
-            var innerParts = parts[j].split('=');
+          var givenX = NaN;
+          var givenY = NaN;
+          var target = NaN;
+          if(outerParts[1] !== undefined) {
+            target = parseFloat(outerParts[1]);
+          }
+          for(var j = 0; j < leftInner.length; j++) {
+            var innerParts = leftInner[j].split('=');
             if(innerParts[0].trim() == 'X') {
               x = parseInt(innerParts[1].trim());
             } else if(innerParts[0].trim() == 'Y') {
               y = parseInt(innerParts[1].trim());
             }
           }
+          if(parts[1] !== undefined) {
+            var rightParts = parts[1].trim().split('=');
+            if(rightParts[0].trim() == 'X') {
+              givenX = rightParts[1] == undefined ? 0 : parseInt(rightParts[1].trim());
+            } else if(rightParts[0].trim() == 'Y') {
+              givenY = rightParts[1] == undefined ? 0 : parseInt(rightParts[1].trim());
+            }
+          }
           if(!isNaN(x) || !isNaN(y)) {
-            my.probQs.push([x,y]);
+            if(find) {
+              my.probQs.push([x,y,givenX,givenY]);
+            } else {
+              my.makeQs.push([x,y,givenX,givenY,target]);
+            }
             var li = document.createElement('li');
             var text = "P(";
             if(!isNaN(x)) {
@@ -496,7 +541,26 @@ EntropyMadeVisible = (function(my) {
             if(!isNaN(y)) {
               text = text + "Y=" + y;
             }
-            text = text + "): <input id=\"Q_" + x + "_" + y + "\" class=\"answerInput\" />";
+            if(givenX == 0) {
+              text = text + "|X";
+            } else if(givenX > 0) {
+              text = text + "|X=" + givenX;
+            }
+            if(givenY == 0) {
+              text = text + "|Y";
+            } else if(givenY > 0) {
+              text = text + "|Y=" + givenY;
+            }
+            text = text + ")";
+            if(!isNaN(target)) {
+              text = text + "=" + target;
+            }
+            text = text + ": <input id=\"Q_" + x + "_" + y + "_" + givenX + "_" + givenY;
+            if(find) {
+              text = text + "\" class=\"answerInput\" />";
+            } else {
+              text = text + "\" class=\"incorrectStatDisplay\" />";
+            }
             li.innerHTML = text;
             var statDisplay = $("#statList").get(0);
             statDisplay.appendChild(li);
@@ -521,10 +585,9 @@ EntropyMadeVisible = (function(my) {
           }
         }
       }
-      $('#HX_input').attr("disabled", "disabled");
-      $('#HY_input').attr("disabled", "disabled");
-      $('#HXY_input').attr("disabled", "disabled");
-      $('#MI_input').attr("disabled", "disabled");
+      $('.statDisplay').attr("disabled", "disabled");
+      $('.incorrectStatDisplay').attr("disabled", "disabled");
+      $('.correctStatDisplay').attr("disabled", "disabled");
       if(true) {
         // If we have any possible answers display the check answers button
         $('#checkAnswersLi').css("display", "block");

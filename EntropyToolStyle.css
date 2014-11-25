@@ -38,6 +38,27 @@
 	width: 6em;
 }
 
+.incorrectStatDisplay {
+	border: 2px solid red;
+	padding: 2px;
+	margin: 2px;
+	width: 6em;
+}
+
+.correctStatDisplay {
+	border: 2px solid green;
+	padding: 2px;
+	margin: 2px;
+	width: 6em;
+}
+
+.answerInput {
+	border: 2px solid orange;
+	padding: 2px;
+	margin: 2px;
+	width: 6em;
+}
+
 #TableParamsDiv {
 	display: table;
 	width: 100%;
