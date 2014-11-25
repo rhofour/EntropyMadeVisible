@@ -438,8 +438,8 @@ EntropyMadeVisible = (function(my) {
     if(isNaN(y)) { // No Y
       if(isNaN(givenY)) { // H(X)
         return entropy(my.xProbs);
-      } else if(givenY == 0) { // P(X|Y)
-        return jointEntropy() - entropy(my.xProbs);
+      } else if(givenY == 0) { // H(X|Y)
+        return jointEntropy() - entropy(my.yProbs);
       } else { // H(X|Y = givenY)
         var condProbs = [];
         for(var i = 1; i <= n; i++) {
@@ -450,9 +450,9 @@ EntropyMadeVisible = (function(my) {
     } else if(isNaN(x)) { // No X
       if(isNaN(givenX)) { // H(Y)
         return entropy(my.yProbs);
-      } else if(givenX == 0) { // P(Y|X)
+      } else if(givenX == 0) { // H(Y|X)
         return jointEntropy() - entropy(my.xProbs);
-      } else { // P(Y|X = givenX)
+      } else { // H(Y|X = givenX)
         var condProbs = [];
         for(var i = 1; i <= n; i++) {
           condProbs[i] = getProb(NaN, i, givenX, NaN);
