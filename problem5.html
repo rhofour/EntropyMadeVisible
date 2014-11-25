@@ -9,6 +9,23 @@
 		</script>
 	</head>
 	<body>
+		<H1>Entropy and Mutal Information Review </H1>
+		<b>Entropy</b> is the measureof unpredictability of information in data. As a thought exercise consider rolling a dice or flipping a coin, which is more random? What about flipping two coins? 3 coins? We wish to capture this intuition of what is "more random" mathematically. We do this with the following definition of entropy:
+		$$H(X) = -\sum_{x\in X}p(x)log_2(p(x))$$
+		With the log in base 2 we are representing the entropy in bits. For example a random variable with 2 outcomes only has 1 bit of entropy(randomness) as we can represent each outcome as either 1 or 0.<br>
+		<b>Joint entropy</b> is defined in a similar way:
+		$$H(X,Y) = -\sum_{x\in X}\sum_{y\in Y}p(x,y)log_2(p(x,y))$$
+		A property that can be easily proven is when \( X\) and \( Y\) are independent then:
+		$$H(X,Y) = H(X) + H(Y)$$
+		Intuitively this makes sense as the entropy of flipping 2 coins should be double the entropy of flipping 1 coin.<br>
+		Finally we can introduce <b> conditional entropy</b> :
+		$$H(Y|X=x) = -sum_{y\in Y}p(x|y)log_2(p(y|x))$$
+		or more generally
+		$$H(Y|X) = -\sum_{x\in X}\sum_{y\in Y}p(x,y)log_2(p(y|x))$$
+		This can be intuitively thought of as the entropy of a random variable \( Y\) given that we already know something about \( X\).<br>
+		Finally we quanity how much information one variable conveys about another. We do this with <b>mutual information</b>. Here we define information as a reduction in uncertainty(entropy). With this in mind we define:
+		$$MI(X;Y) = H(Y) - H(Y|X) = \sum_{x\in X}\sum_{y\in Y}p(x,y)log_2(\frac{p(x,y)}{p(y)p(x)})$$
+		From our diagram the intuition is that \( H(X)\) can be though of as the number of bits needed to represent all possible choices of \( X\). For example if \( X\) has 4 equal possible outcomes then we would have \( H(X) = 2\). The same intuition can be used for joint entropies except now we must consider all possible choices of \( (x,y) \). The intuition behind mutual information can be seen in the simple examples following these exercises.
 		<H1>Problem 5</H1>
 		What is H(X) in the following figure?
 		<div id="test"></div>
