@@ -248,7 +248,13 @@ EntropyMadeVisible = (function(my) {
     }
     for(var i = 0; i < my.makeQs.length; i++) {
       var q = my.makeQs[i];
-      var x = q[0] ? getProb(q[1], q[2], q[3], q[4]) : getEntropy(q[1], q[2], q[3], q[4]);
+      if(q[0] == "P") {
+        var x = getProb(q[1], q[2], q[3], q[4]);
+      } else if(q[0] == "H") {
+        var x = getEntropy(q[1], q[2], q[3], q[4]);
+      } else if(q[0] == "MI") {
+        var x = mutualInformation();
+      }
       var id = "#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3] + "_" + q[4];
       $(id).val(x);
       $(id).get(0).className =
@@ -465,10 +471,12 @@ EntropyMadeVisible = (function(my) {
       var id = "#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3] + "_" + q[4];
       var ans = parseFloat($(id).val());
       var calculated = 0;
-      if(q[0]) {
+      if(q[0] == "P") {
         calculated = getProb(q[1], q[2], q[3], q[4]);
-      } else {
+      } else if(q[0] == "H") {
         calculated = getEntropy(q[1], q[2], q[3], q[4]);
+      } else if(q[0] == "MI") {
+        calculated = mutualInformation();
       }
       correct = correct && (Math.abs(calculated - ans) < 0.01);
       console.log("Got " + ans + " calculated: " + calculated);
@@ -493,8 +501,7 @@ EntropyMadeVisible = (function(my) {
   // Cx: Sets the starting number of colors to be x (ex: C5 starts with 5 colors)
   // fixedSize: disables the buttons to change the size of the grid
   // fixedColors: disables the buttons to change the number of colors
-  // TODO: add in findH(X), findH(Y), findH(Y|X=x)
-  // TODO: add makeH(X)=x, makeH(Y|X=x)=y, makeH(X,Y)=z, makeMI(X;Y)=z
+  // TODO: Add documentation on all the new options
   // makeP(X=4,Y=2)=0.25
   // findP(X=x): Adds a P(X=x) field to fill in with an answer
   // findP(Y=y): Adds a P(X=x) field to fill in with an answer
@@ -540,10 +547,32 @@ EntropyMadeVisible = (function(my) {
           $("#cMinus").attr("disabled", "disabled");
         } else if(param == "fixedProbabilities") { // Disable changing probabilities
           fixedProbabilities = true;
+        } else if(param == "findMI(X;Y)" || param.substring(0,11) == "makeMI(X;Y)=" ||
+            param == "findMI(X,Y)" || param.substring(0,11) == "makeMI(X,Y)=") {
+          var find = param.substring(0,4) == "find";
+          var target = parseFloat(param.slice(12,-1));
+          if(find) {
+            my.findQs.push(["MI",NaN,NaN,NaN,NaN]);
+            var classname = "answerInput";
+          } else {
+            my.makeQs.push(["MI",NaN,NaN,NaN,NaN,target]);
+            var classname = "incorrectStatDisplay";
+          }
+          var li = document.createElement('li');
+          li.innerHTML = "MI(X;Y): <input id=\"Q_MI_NaN_NaN_NaN_NaN\" class=\"" +
+            classname + "\" />";
+          var statDisplay = $("#statList").get(0);
+          statDisplay.appendChild(li);
+          $("#MI_li").hide();
         } else if(param.substring(0,6) == "findP(" || param.substring(0,6) == "makeP(" ||
             param.substring(0,6) == "findH(" || param.substring(0,6) == "makeH(") {
           var find = param.substring(0,4) == "find";
-          var prob = param[4] == "P";
+          var quantity = "?";
+          if(param[4] == "P") {
+            quantity = "P";
+          } else if(param[4] == "H") {
+            quantity = "H";
+          }
           var outerParts = param.substring(6).split(')');
           var inner = outerParts[0];
           var parts = inner.split('|');
@@ -559,9 +588,9 @@ EntropyMadeVisible = (function(my) {
           for(var j = 0; j < leftInner.length; j++) {
             var innerParts = leftInner[j].split('=');
             if(innerParts[0].trim() == 'X') {
-              x = prob ? parseInt(innerParts[1].trim()) : 0;
+              x = quantity == "P" ? parseInt(innerParts[1].trim()) : 0;
             } else if(innerParts[0].trim() == 'Y') {
-              y = prob ? parseInt(innerParts[1].trim()) : 0;
+              y = quantity == "P" ? parseInt(innerParts[1].trim()) : 0;
             }
           }
           if(parts[1] !== undefined) {
@@ -572,13 +601,13 @@ EntropyMadeVisible = (function(my) {
               givenY = rightParts[1] == undefined ? 0 : parseInt(rightParts[1].trim());
             }
           }
-          console.log("Parsed out: [" + prob + ", " + x + ", " + y + ", " + givenX +
+          console.log("Parsed out: [" + quantity + ", " + x + ", " + y + ", " + givenX +
               ", " + givenY + ", " + target + "]");
           if(!isNaN(x) || !isNaN(y)) {
             if(find) {
-              my.findQs.push([prob,x,y,givenX,givenY]);
+              my.findQs.push([quantity,x,y,givenX,givenY]);
             } else {
-              my.makeQs.push([prob,x,y,givenX,givenY,target]);
+              my.makeQs.push([quantity,x,y,givenX,givenY,target]);
             }
             var li = document.createElement('li');
             var text = "";
@@ -616,7 +645,7 @@ EntropyMadeVisible = (function(my) {
             if(!isNaN(target)) {
               text = text + "=" + target;
             }
-            text = text + ": <input id=\"Q_" + prob + "_" + x + "_" + y + "_" + givenX + "_" + givenY;
+            text = text + ": <input id=\"Q_" + quantity + "_" + x + "_" + y + "_" + givenX + "_" + givenY;
             if(find) {
               text = text + "\" class=\"answerInput\" />";
             } else {
@@ -625,13 +654,13 @@ EntropyMadeVisible = (function(my) {
             li.innerHTML = text;
             var statDisplay = $("#statList").get(0);
             statDisplay.appendChild(li);
-            if(!prob && x == 0 && isNaN(y) && isNaN(givenX) && isNaN(givenY)) {
+            if(quantity == "H" && x == 0 && isNaN(y) && isNaN(givenX) && isNaN(givenY)) {
               $("#HX_li").hide();
             }
-            if(!prob && y == 0 && isNaN(x) && isNaN(givenX) && isNaN(givenY)) {
+            if(quantity == "H" && y == 0 && isNaN(x) && isNaN(givenX) && isNaN(givenY)) {
               $("#HY_li").hide();
             }
-            if(!prob && x == 0 && y == 0 && isNaN(givenX) && isNaN(givenY)) {
+            if(quantity == "H" && x == 0 && y == 0 && isNaN(givenX) && isNaN(givenY)) {
               $("#HXY_li").hide();
             }
           }
