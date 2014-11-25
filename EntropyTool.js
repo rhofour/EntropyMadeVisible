@@ -436,19 +436,19 @@ EntropyMadeVisible = (function(my) {
         return jointEntropy() - entropy(my.xProbs);
       } else { // H(X|Y = givenY)
         var condProbs = [];
-        for(var i = 1; i < n; i++) {
+        for(var i = 1; i <= n; i++) {
           condProbs[i] = getProb(i, NaN, NaN, givenY);
         }
         return entropy(condProbs);
       }
-    } else if(isNaN(y)) { // No Y
+    } else if(isNaN(x)) { // No X
       if(isNaN(givenX)) { // H(Y)
         return entropy(my.yProbs);
       } else if(givenX == 0) { // P(Y|X)
         return jointEntropy() - entropy(my.xProbs);
       } else { // P(Y|X = givenX)
         var condProbs = [];
-        for(var i = 1; i < n; i++) {
+        for(var i = 1; i <= n; i++) {
           condProbs[i] = getProb(NaN, i, givenX, NaN);
         }
         return entropy(condProbs);
@@ -464,11 +464,14 @@ EntropyMadeVisible = (function(my) {
       var q = my.findQs[i];
       var id = "#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3] + "_" + q[4];
       var ans = parseFloat($(id).val());
+      var calculated = 0;
       if(q[0]) {
-        correct = correct && (Math.abs(getProb(q[1], q[2], q[3], q[4]) - ans) < 0.01);
+        calculated = getProb(q[1], q[2], q[3], q[4]);
       } else {
-        correct = correct && (Math.abs(getEntropy(q[1], q[2], q[3], q[4]) - ans) < 0.01);
+        calculated = getEntropy(q[1], q[2], q[3], q[4]);
       }
+      correct = correct && (Math.abs(calculated - ans) < 0.01);
+      console.log("Got " + ans + " calculated: " + calculated);
     }
     for(var i = 0; i < my.makeQs.length; i++) {
       var q = my.makeQs[i];
@@ -539,9 +542,9 @@ EntropyMadeVisible = (function(my) {
           fixedProbabilities = true;
         } else if(param.substring(0,6) == "findP(" || param.substring(0,6) == "makeP(" ||
             param.substring(0,6) == "findH(" || param.substring(0,6) == "makeH(") {
-          var find = (param.substring(0,6) == "findP(");
+          var find = param.substring(0,4) == "find";
           var prob = param[4] == "P";
-          var outerParts = param.substring(6).split(')=');
+          var outerParts = param.substring(6).split(')');
           var inner = outerParts[0];
           var parts = inner.split('|');
           var leftInner = parts[0].trim().split(',');
@@ -551,14 +554,14 @@ EntropyMadeVisible = (function(my) {
           var givenY = NaN;
           var target = NaN;
           if(outerParts[1] !== undefined) {
-            target = parseFloat(outerParts[1]);
+            target = parseFloat(outerParts[1].substring(1));
           }
           for(var j = 0; j < leftInner.length; j++) {
             var innerParts = leftInner[j].split('=');
             if(innerParts[0].trim() == 'X') {
-              x = parseInt(innerParts[1].trim());
+              x = prob ? parseInt(innerParts[1].trim()) : 0;
             } else if(innerParts[0].trim() == 'Y') {
-              y = parseInt(innerParts[1].trim());
+              y = prob ? parseInt(innerParts[1].trim()) : 0;
             }
           }
           if(parts[1] !== undefined) {
@@ -569,6 +572,8 @@ EntropyMadeVisible = (function(my) {
               givenY = rightParts[1] == undefined ? 0 : parseInt(rightParts[1].trim());
             }
           }
+          console.log("Parsed out: [" + prob + ", " + x + ", " + y + ", " + givenX +
+              ", " + givenY + ", " + target + "]");
           if(!isNaN(x) || !isNaN(y)) {
             if(find) {
               my.findQs.push([prob,x,y,givenX,givenY]);
@@ -576,15 +581,26 @@ EntropyMadeVisible = (function(my) {
               my.makeQs.push([prob,x,y,givenX,givenY,target]);
             }
             var li = document.createElement('li');
-            var text = "P(";
+            var text = "";
+            if(prob) {
+              text = text +"P(";
+            } else {
+              text = text +"H(";
+            }
             if(!isNaN(x)) {
-              text = text + "X=" + x;
+              text = text + "X";
+              if(prob) {
+                text = text + "=" + x;
+              }
               if(!isNaN(y)) {
                 text = text + ", ";
               }
             }
             if(!isNaN(y)) {
-              text = text + "Y=" + y;
+              text = text + "Y";
+              if(prob) {
+                text = text + "=" + y;
+              }
             }
             if(givenX == 0) {
               text = text + "|X";
@@ -609,6 +625,15 @@ EntropyMadeVisible = (function(my) {
             li.innerHTML = text;
             var statDisplay = $("#statList").get(0);
             statDisplay.appendChild(li);
+            if(!prob && x == 0 && isNaN(y) && isNaN(givenX) && isNaN(givenY)) {
+              $("#HX_li").hide();
+            }
+            if(!prob && y == 0 && isNaN(x) && isNaN(givenX) && isNaN(givenY)) {
+              $("#HY_li").hide();
+            }
+            if(!prob && x == 0 && y == 0 && isNaN(givenX) && isNaN(givenY)) {
+              $("#HXY_li").hide();
+            }
           }
         } else if(param.substring(0,3) == "row") {
           var parts = param.slice(3).split(':');
