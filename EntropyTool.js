@@ -9,7 +9,7 @@ EntropyMadeVisible = (function(my) {
   my.xProbs = [];
   my.yProbs = [];
   my.colors = 1;
-  my.probQs = [];
+  my.findQs = [];
   my.makeQs = [];
   var fixedProbabilities = false;
   var maxColors = 2;
@@ -248,10 +248,11 @@ EntropyMadeVisible = (function(my) {
     }
     for(var i = 0; i < my.makeQs.length; i++) {
       var q = my.makeQs[i];
-      var x = getProb(q[0], q[1], q[2], q[3]);
-      $("#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3]).val(x);
-      $("#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3]).get(0).className =
-        Math.abs(x - q[4]) < 0.01 ? "correctStatDisplay" : "incorrectStatDisplay";
+      var x = q[0] ? getProb(q[1], q[2], q[3], q[4]) : getEntropy(q[1], q[2], q[3], q[4]);
+      var id = "#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3] + "_" + q[4];
+      $(id).val(x);
+      $(id).get(0).className =
+        Math.abs(x - q[5]) < 0.01 ? "correctStatDisplay" : "incorrectStatDisplay";
     }
   }
 
@@ -401,36 +402,78 @@ EntropyMadeVisible = (function(my) {
   }
 
   var getProb = function(x, y, givenX, givenY) {
+    if(x > n || y > n || givenX > n || givenY > n) return;
     var totalMass = getTotalMass();
+    var ans = 0;
     if(isNaN(y)) { // No Y
       if(isNaN(givenY)) { // P(X = x)
-        return my.xProbs[x];
+        ans = my.xProbs[x];
       } else { // P(X = x|Y = givenY)
-        return (my.colorGrid[x][givenY] / totalMass) / my.yProbs[givenY];
+        ans = (my.colorGrid[x][givenY] / totalMass) / my.yProbs[givenY];
       }
     } else if(isNaN(x)) { // No X
       if(isNaN(givenX)) { // P(Y = y)
-        return my.yProbs[y];
+        ans = my.yProbs[y];
       } else { // P(Y = y|X = givenX)
-        return (my.colorGrid[givenX][y] / totalMass) / my.xProbs[givenX];
+        ans = (my.colorGrid[givenX][y] / totalMass) / my.xProbs[givenX];
       }
     } else { // P(X = q[0], Y = q[1])
-      return my.colorGrid[x][y] / totalMass;
+      ans = my.colorGrid[x][y] / totalMass;
+    }
+    if(isNaN(ans)) {
+      ans = 0;
+    }
+    return ans;
+  }
+
+  var getEntropy = function(x, y, givenX, givenY) {
+    if(x > n || y > n || givenX > n || givenY > n) return;
+    var totalMass = getTotalMass();
+    if(isNaN(y)) { // No Y
+      if(isNaN(givenY)) { // H(X)
+        return entropy(my.xProbs);
+      } else if(givenY == 0) { // P(X|Y)
+        return jointEntropy() - entropy(my.xProbs);
+      } else { // H(X|Y = givenY)
+        var condProbs = [];
+        for(var i = 1; i < n; i++) {
+          condProbs[i] = getProb(i, NaN, NaN, givenY);
+        }
+        return entropy(condProbs);
+      }
+    } else if(isNaN(y)) { // No Y
+      if(isNaN(givenX)) { // H(Y)
+        return entropy(my.yProbs);
+      } else if(givenX == 0) { // P(Y|X)
+        return jointEntropy() - entropy(my.xProbs);
+      } else { // P(Y|X = givenX)
+        var condProbs = [];
+        for(var i = 1; i < n; i++) {
+          condProbs[i] = getProb(NaN, i, givenX, NaN);
+        }
+        return entropy(condProbs);
+      }
+    } else { // H(X,Y)
+      return jointEntropy();
     }
   }
 
   var checkAnswers = function() {
     var correct = true;
-    for(var i = 0; i < my.probQs.length; i++) {
-      var q = my.probQs[i];
-      var ans = parseFloat($("#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3]).val());
-      correct = correct && (Math.abs(getProb(q[0], q[1], q[2], q[3]) - ans) < 0.01);
+    for(var i = 0; i < my.findQs.length; i++) {
+      var q = my.findQs[i];
+      var id = "#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3] + "_" + q[4];
+      var ans = parseFloat($(id).val());
+      if(q[0]) {
+        correct = correct && (Math.abs(getProb(q[1], q[2], q[3], q[4]) - ans) < 0.01);
+      } else {
+        correct = correct && (Math.abs(getEntropy(q[1], q[2], q[3], q[4]) - ans) < 0.01);
+      }
     }
     for(var i = 0; i < my.makeQs.length; i++) {
       var q = my.makeQs[i];
-      correct = correct &&
-        $("#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3]).get(0).className ==
-        "correctStatDisplay";
+      var id = "#Q_" + q[0] + "_" + q[1] + "_" + q[2] + "_" + q[3] + "_" + q[4];
+      correct = correct && $(id).get(0).className == "correctStatDisplay";
     }
     if(correct) {
       alert("Correct!");
@@ -494,8 +537,10 @@ EntropyMadeVisible = (function(my) {
           $("#cMinus").attr("disabled", "disabled");
         } else if(param == "fixedProbabilities") { // Disable changing probabilities
           fixedProbabilities = true;
-        } else if(param.substring(0,6) == "findP(" || param.substring(0,6) == "makeP(") {
+        } else if(param.substring(0,6) == "findP(" || param.substring(0,6) == "makeP(" ||
+            param.substring(0,6) == "findH(" || param.substring(0,6) == "makeH(") {
           var find = (param.substring(0,6) == "findP(");
+          var prob = param[4] == "P";
           var outerParts = param.substring(6).split(')=');
           var inner = outerParts[0];
           var parts = inner.split('|');
@@ -526,9 +571,9 @@ EntropyMadeVisible = (function(my) {
           }
           if(!isNaN(x) || !isNaN(y)) {
             if(find) {
-              my.probQs.push([x,y,givenX,givenY]);
+              my.findQs.push([prob,x,y,givenX,givenY]);
             } else {
-              my.makeQs.push([x,y,givenX,givenY,target]);
+              my.makeQs.push([prob,x,y,givenX,givenY,target]);
             }
             var li = document.createElement('li');
             var text = "P(";
@@ -555,7 +600,7 @@ EntropyMadeVisible = (function(my) {
             if(!isNaN(target)) {
               text = text + "=" + target;
             }
-            text = text + ": <input id=\"Q_" + x + "_" + y + "_" + givenX + "_" + givenY;
+            text = text + ": <input id=\"Q_" + prob + "_" + x + "_" + y + "_" + givenX + "_" + givenY;
             if(find) {
               text = text + "\" class=\"answerInput\" />";
             } else {
@@ -571,6 +616,7 @@ EntropyMadeVisible = (function(my) {
           storedRows[row] = parts[1];
         }
       }
+      console.log("Setting initial size to " + targetN);
       for(var j = 1; j < targetN; j++) {
         my.increaseN();
       }
