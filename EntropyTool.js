@@ -330,7 +330,8 @@ EntropyMadeVisible = (function(my) {
       hyLabelLine.setAttributeNS(null, "x2", (spacing + r1 + d + ((9*r2)/10)) * (300/vbWidth));
       hyLabelLine.setAttributeNS(null, "y2", 85);
       var miLabelLine = $("#mi_label_line").get(0);
-      miLabelLine.setAttributeNS(null, "x2", (spacing + r1 + (d/2)) * (300/vbWidth));
+      miLabelLine.setAttributeNS(null, "x2", 
+          (((spacing + 2*r1) + (spacing + r1 + d - r2))/2) * (300/vbWidth));
       miLabelLine.setAttributeNS(null, "y2", 85);
     } else {
       xCirc.setAttributeNS(null, "cx", 100);
