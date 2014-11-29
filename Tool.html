@@ -40,12 +40,24 @@
 	<div id="RightGraphicsDiv">
 		<div id="VennDiagramDiv">
 			<h1>Entropy Venn Diagram</h1>
-			<svg id="VennDiagram" viewBox="0 0 300 150">
-				<rect id="vdBorder" width="300" height="150" style="fill:rgb(255,255,255);stroke-width:3;stroke:rgb(0,0,0)" />
-				<circle id="redCircle" cx="100" cy="75" r="70" stroke="black"
-					fill="rgb(238,100,100)" opacity="0.5" stroke-width="1" />
-				<circle id="greenCircle" cx="200" cy="75" r="70" stroke="black"
-					fill="rgb(100,238,100)" opacity="0.5" stroke-width="1" />
+			<svg id="VennDiagram" viewBox="0 0 300 170">
+				<text id="hx_label" x="20" y ="15">H(X)</text>
+				<text id="hy_label" x="250" y ="15">H(Y)</text>
+				<text id="mi_label" x="130" y ="15">MI(X;Y)</text>
+				<svg id="InnerVennDiagram" x="0" y="20" width="300" height="150" viewBox="0 0 300 150"
+					preserveAspectRatio="none">
+					<rect id="vdBorder" width="300" height="150" style="fill:rgb(255,255,255);stroke-width:1;stroke:rgb(0,0,0)" x="0" y="0" />
+					<circle id="redCircle" cx="100" cy="75" r="70" stroke="black"
+						fill="rgb(238,100,100)" opacity="0.5" stroke-width="1" />
+					<circle id="greenCircle" cx="200" cy="75" r="70" stroke="black"
+						fill="rgb(100,238,100)" opacity="0.5" stroke-width="1" />
+				</svg>
+				<line id="hx_label_line" x1="35" y1="15" x2="35" y2="85"
+					style="stroke:rgb(238,100,0);stroke-width:1" />
+				<line id="hy_label_line" x1="265" y1="15" x2="265" y2="85"
+					style="stroke:rgb(100,238,0);stroke-width:1" />
+				<line id="mi_label_line" x1="155" y1="15" x2="155" y2="85"
+					style="stroke:rgb(169,169,0);stroke-width:1" />
 			</svg>
 		</div>
 		<div id="XHistDiv">

@@ -234,6 +234,7 @@ EntropyMadeVisible = (function(my) {
   }
 
   var resetStats = function() {
+    $("#N").val(n);
     if(isNaN(my.correctHx)) {
       $("#HX_input").val(entropy(my.xProbs) + " bits");
     }
@@ -319,13 +320,32 @@ EntropyMadeVisible = (function(my) {
     if(r1 > 0 && r2 > 0) {
       xCirc.setAttributeNS(null, "cx", spacing + r1);
       yCirc.setAttributeNS(null, "cx", spacing + r1 + d);
-      $("#VennDiagram").get(0).setAttributeNS(null, "viewBox", "0 0 " + (2*spacing + r1 + d + r2) + " 150");
-      $("#vdBorder").get(0).setAttributeNS(null, "width", (2*spacing + r1 + d + r2));
+      var vbWidth = 2*spacing + r1 + d + r2;
+      $("#InnerVennDiagram").get(0).setAttributeNS(null, "viewBox", "0 0 " + vbWidth + " 150");
+      $("#vdBorder").get(0).setAttributeNS(null, "width", vbWidth);
+      var hxLabelLine = $("#hx_label_line").get(0);
+      hxLabelLine.setAttributeNS(null, "x2", (spacing+(r1/10)) * (300/vbWidth));
+      hxLabelLine.setAttributeNS(null, "y2", 85);
+      var hyLabelLine = $("#hy_label_line").get(0);
+      hyLabelLine.setAttributeNS(null, "x2", (spacing + r1 + d + ((9*r2)/10)) * (300/vbWidth));
+      hyLabelLine.setAttributeNS(null, "y2", 85);
+      var miLabelLine = $("#mi_label_line").get(0);
+      miLabelLine.setAttributeNS(null, "x2", (spacing + r1 + (d/2)) * (300/vbWidth));
+      miLabelLine.setAttributeNS(null, "y2", 85);
     } else {
       xCirc.setAttributeNS(null, "cx", 100);
       yCirc.setAttributeNS(null, "cx", 200);
-      $("#VennDiagram").get(0).setAttributeNS(null, "viewBox", "0 0 300 150");
+      $("#InnerVennDiagram").get(0).setAttributeNS(null, "viewBox", "0 0 300 150");
       $("#vdBorder").get(0).setAttributeNS(null, "width", 300);
+      var hxLabelLine = $("#hx_label_line").get(0);
+      hxLabelLine.setAttributeNS(null, "x2", 35);
+      hxLabelLine.setAttributeNS(null, "y2", 15);
+      var hyLabelLine = $("#hy_label_line").get(0);
+      hyLabelLine.setAttributeNS(null, "x2", 265);
+      hyLabelLine.setAttributeNS(null, "y2", 15);
+      var miLabelLine = $("#mi_label_line").get(0);
+      miLabelLine.setAttributeNS(null, "x2", 155);
+      miLabelLine.setAttributeNS(null, "y2", 15);
     }
   }
 
@@ -371,6 +391,9 @@ EntropyMadeVisible = (function(my) {
     if(my.colors > 1) {
       my.colors = my.colors - 1;
       $("#Ncolors").val(my.colors);
+      // Remove row from colors table
+      var colorProbsTable = $("#ColorProbsTable").get(0);
+      colorProbsTable.deleteRow(-1);
       // Remove any colors out of this range
       for (var i = 1; i <= n; i++) {
         for (var j = 1; j <= n; j++) {
