@@ -338,12 +338,22 @@ EntropyMadeVisible = (function(my) {
       yCirc.setAttributeNS(null, "cx", 200);
       $("#InnerVennDiagram").get(0).setAttributeNS(null, "viewBox", "0 0 300 150");
       $("#vdBorder").get(0).setAttributeNS(null, "width", 300);
-      var hxLabelLine = $("#hx_label_line").get(0);
-      hxLabelLine.setAttributeNS(null, "x2", 35);
-      hxLabelLine.setAttributeNS(null, "y2", 15);
+        var hxLabelLine = $("#hx_label_line").get(0);
+      if(r1 > 0) {
+        hxLabelLine.setAttributeNS(null, "x2", 100);
+        hxLabelLine.setAttributeNS(null, "y2", 85);
+      } else {
+        hxLabelLine.setAttributeNS(null, "x2", 35);
+        hxLabelLine.setAttributeNS(null, "y2", 15);
+      }
       var hyLabelLine = $("#hy_label_line").get(0);
-      hyLabelLine.setAttributeNS(null, "x2", 265);
-      hyLabelLine.setAttributeNS(null, "y2", 15);
+      if(r2 > 0) {
+        hyLabelLine.setAttributeNS(null, "x2", 200);
+        hyLabelLine.setAttributeNS(null, "y2", 85);
+      } else {
+        hyLabelLine.setAttributeNS(null, "x2", 265);
+        hyLabelLine.setAttributeNS(null, "y2", 15);
+      }
       var miLabelLine = $("#mi_label_line").get(0);
       miLabelLine.setAttributeNS(null, "x2", 155);
       miLabelLine.setAttributeNS(null, "y2", 15);
